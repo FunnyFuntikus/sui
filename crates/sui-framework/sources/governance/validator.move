@@ -53,7 +53,12 @@ module sui::validator {
     /// Invalidworker_address field in ValidatorMetadata
     const EMetadataInvalidWorkerAddr: u64 = 7;
 
+    /// Commission rate set by the validator is higher than the threshold
+    const ECommissionRateTooHigh: u64 = 8;
+
     const EInvalidProofOfPossession: u64 = 0;
+
+    const MAX_COMMISSION_RATE: u64 = 10_000; // Max rate is 100%, which is 10K base points
 
     struct ValidatorMetadata has store, drop, copy {
         /// The Sui Address of the validator. This is the sender that created the Validator object,
@@ -205,6 +210,7 @@ module sui::validator {
                 && vector::length(&protocol_pubkey_bytes) <= 128,
             0
         );
+        assert!(commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
         verify_proof_of_possession(
             proof_of_possession,
             sui_address,
@@ -241,8 +247,8 @@ module sui::validator {
     }
 
     /// Deactivate this validator's staking pool
-    public(friend) fun deactivate(self: &mut Validator, ctx: &mut TxContext) {
-        staking_pool::deactivate_staking_pool(&mut self.staking_pool, ctx)
+    public(friend) fun deactivate(self: &mut Validator, deactivation_epoch: u64) {
+        staking_pool::deactivate_staking_pool(&mut self.staking_pool, deactivation_epoch)
     }
 
     /// Process pending stake and pending withdraws, and update the gas price.
@@ -285,6 +291,7 @@ module sui::validator {
     }
 
     public(friend) fun request_set_commission_rate(self: &mut Validator, new_commission_rate: u64) {
+        assert!(new_commission_rate <= MAX_COMMISSION_RATE, ECommissionRateTooHigh);
         self.next_epoch_commission_rate = new_commission_rate;
     }
 

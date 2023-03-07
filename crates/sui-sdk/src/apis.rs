@@ -29,7 +29,7 @@ use sui_types::event::EventID;
 use sui_types::messages::{ExecuteTransactionRequestType, TransactionData, VerifiedTransaction};
 use sui_types::messages_checkpoint::{CheckpointSequenceNumber, CheckpointSummary};
 use sui_types::query::{EventQuery, TransactionQuery};
-use sui_types::sui_system_state::ValidatorMetadata;
+use sui_types::sui_system_state::sui_system_state_inner_v1::ValidatorMetadata;
 
 use futures::StreamExt;
 use sui_json_rpc::api::{CoinReadApiClient, EventReadApiClient, ReadApiClient, WriteApiClient};
@@ -107,6 +107,13 @@ impl ReadApi {
         digest: TransactionDigest,
     ) -> SuiRpcResult<SuiTransactionResponse> {
         Ok(self.api.http.get_transaction(digest).await?)
+    }
+
+    pub async fn multi_get_transactions(
+        &self,
+        digests: Vec<TransactionDigest>,
+    ) -> SuiRpcResult<Vec<SuiTransactionResponse>> {
+        Ok(self.api.http.multi_get_transactions(digests).await?)
     }
 
     pub async fn get_committee_info(&self, epoch: Option<EpochId>) -> SuiRpcResult<SuiCommittee> {

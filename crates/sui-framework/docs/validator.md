@@ -315,6 +315,16 @@
 ## Constants
 
 
+<a name="0x2_validator_ECommissionRateTooHigh"></a>
+
+Commission rate set by the validator is higher than the threshold
+
+
+<pre><code><b>const</b> <a href="validator.md#0x2_validator_ECommissionRateTooHigh">ECommissionRateTooHigh</a>: u64 = 8;
+</code></pre>
+
+
+
 <a name="0x2_validator_EInvalidProofOfPossession"></a>
 
 
@@ -390,6 +400,15 @@ Invalid worker_pubkey_bytes field in ValidatorMetadata
 
 
 <pre><code><b>const</b> <a href="validator.md#0x2_validator_EMetadataInvalidWorkerPubKey">EMetadataInvalidWorkerPubKey</a>: u64 = 3;
+</code></pre>
+
+
+
+<a name="0x2_validator_MAX_COMMISSION_RATE"></a>
+
+
+
+<pre><code><b>const</b> <a href="validator.md#0x2_validator_MAX_COMMISSION_RATE">MAX_COMMISSION_RATE</a>: u64 = 10000;
 </code></pre>
 
 
@@ -546,6 +565,7 @@ Invalid worker_pubkey_bytes field in ValidatorMetadata
             && <a href="_length">vector::length</a>(&protocol_pubkey_bytes) &lt;= 128,
         0
     );
+    <b>assert</b>!(<a href="validator.md#0x2_validator_commission_rate">commission_rate</a> &lt;= <a href="validator.md#0x2_validator_MAX_COMMISSION_RATE">MAX_COMMISSION_RATE</a>, <a href="validator.md#0x2_validator_ECommissionRateTooHigh">ECommissionRateTooHigh</a>);
     <a href="validator.md#0x2_validator_verify_proof_of_possession">verify_proof_of_possession</a>(
         proof_of_possession,
         sui_address,
@@ -593,7 +613,7 @@ Invalid worker_pubkey_bytes field in ValidatorMetadata
 Deactivate this validator's staking pool
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x2_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x2_validator_Validator">validator::Validator</a>, ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x2_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x2_validator_Validator">validator::Validator</a>, deactivation_epoch: u64)
 </code></pre>
 
 
@@ -602,8 +622,8 @@ Deactivate this validator's staking pool
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x2_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x2_validator_Validator">Validator</a>, ctx: &<b>mut</b> TxContext) {
-    <a href="staking_pool.md#0x2_staking_pool_deactivate_staking_pool">staking_pool::deactivate_staking_pool</a>(&<b>mut</b> self.<a href="staking_pool.md#0x2_staking_pool">staking_pool</a>, ctx)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x2_validator_deactivate">deactivate</a>(self: &<b>mut</b> <a href="validator.md#0x2_validator_Validator">Validator</a>, deactivation_epoch: u64) {
+    <a href="staking_pool.md#0x2_staking_pool_deactivate_staking_pool">staking_pool::deactivate_staking_pool</a>(&<b>mut</b> self.<a href="staking_pool.md#0x2_staking_pool">staking_pool</a>, deactivation_epoch)
 }
 </code></pre>
 
@@ -746,6 +766,7 @@ Request to set new gas price for the next epoch.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x2_validator_request_set_commission_rate">request_set_commission_rate</a>(self: &<b>mut</b> <a href="validator.md#0x2_validator_Validator">Validator</a>, new_commission_rate: u64) {
+    <b>assert</b>!(new_commission_rate &lt;= <a href="validator.md#0x2_validator_MAX_COMMISSION_RATE">MAX_COMMISSION_RATE</a>, <a href="validator.md#0x2_validator_ECommissionRateTooHigh">ECommissionRateTooHigh</a>);
     self.next_epoch_commission_rate = new_commission_rate;
 }
 </code></pre>
